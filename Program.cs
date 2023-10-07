@@ -172,7 +172,7 @@ app.MapPut("/api/Order/{id}", (HhpizzaDbContext db, int id, Order order) =>
 //View Order Details
 app.MapGet("/api/OrderDetails", (HhpizzaDbContext db, int oId) =>
 {
-    var getOrder = db.Orders.FirstOrDefault(o => o.Id == oId);
+    var getOrder = db.Orders.Where(o => o.Id == oId).Include(x => x.items).ToList();
     return getOrder;
 }
 );
