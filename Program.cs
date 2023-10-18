@@ -86,7 +86,7 @@ app.MapGet("/api/user/{id}", (HhpizzaDbContext db, int id) =>
 
 //Items
 //Delete an Item
-app.MapDelete("/api/product/{id}", (HhpizzaDbContext db, int id) =>
+app.MapDelete("/api/item/{id}", (HhpizzaDbContext db, int id) =>
 {
     Item item = db.Items.SingleOrDefault(p => p.Id == id);
     if (item == null)
@@ -99,7 +99,7 @@ app.MapDelete("/api/product/{id}", (HhpizzaDbContext db, int id) =>
 
 });
 //Update an Item
-app.MapPut("/api/Products/{id}", (HhpizzaDbContext db, int id, Item item) =>
+app.MapPut("/api/items/{id}", (HhpizzaDbContext db, int id, Item item) =>
 {
     Item itemToUpdate = db.Items.SingleOrDefault(product => product.Id == id);
     if (itemToUpdate == null)
@@ -114,16 +114,39 @@ app.MapPut("/api/Products/{id}", (HhpizzaDbContext db, int id, Item item) =>
 });
 
 //Add an item
-app.MapPost("/api/products", (HhpizzaDbContext db, Item item) =>
+app.MapPost("/api/items", (HhpizzaDbContext db, Item item) =>
 {
     db.Items.Add(item);
     db.SaveChanges();
     return Results.Created($"/api/products/{item.Id}", item);
 });
 
+//Add an item to an order
+app.MapPost("/api/items/{id}", (HhpizzaDbContext db, int id, Item item) =>
+{
+    var order = db.Orders.Where(o => o.Id == id).Include(I => I.items).FirstOrDefault();
+    if (order == null)
+    {
+        return Results.NotFound("not found");
+    }
+
+    order.items.Add(item);
+    db.SaveChanges();
+    return Results.Created($"/api/items/{order.Id}", item);
+});
+
+
+//Get all items
+app.MapGet("/api/allItems", (HhpizzaDbContext db) =>
+{
+    
+    return db.Items;
+}
+);
+
 //Orders 
 //View user's orders
-app.MapGet("api/getUserOrders", (HhpizzaDbContext db, int userId) =>
+app.MapGet("api/getUserOrders/{userId}", (HhpizzaDbContext db, int userId) =>
 {
     var userOrders = db.Orders.Where(o => o.UserId == userId);
 
@@ -144,7 +167,7 @@ app.MapDelete("/api/order/{id}", (HhpizzaDbContext db, int id) =>
 });
 
 //Create an Order 
-app.MapPost("/api/Orderlist", (HhpizzaDbContext db, Order order) =>
+app.MapPost("/api/CreateOrder", (HhpizzaDbContext db, Order order) =>
 {
     db.Orders.Add(order);
     db.SaveChanges();
@@ -164,25 +187,63 @@ app.MapPut("/api/Order/{id}", (HhpizzaDbContext db, int id, Order order) =>
     OrderToUpdate.Phone = order.Phone;
     OrderToUpdate.Email = order.Email;
     OrderToUpdate.OrderType = order.OrderType;
-
+    OrderToUpdate.Status = order.Status;
+    OrderToUpdate.PaymentId = order.PaymentId;
+    OrderToUpdate.Tip = order.Tip;
+    OrderToUpdate.ReviewId = order.ReviewId;
 
     db.SaveChanges();
     return Results.NoContent();
 });
-//View Order Details
-app.MapGet("/api/OrderDetails", (HhpizzaDbContext db, int oId) =>
+
+app.MapGet("/api/allOrders", (HhpizzaDbContext db) =>
 {
-    var getOrder = db.Orders.Where(o => o.Id == oId).Include(x => x.items).ToList();
-    return getOrder;
+
+    return db.Orders;
 }
 );
 
-app.MapGet("/api/Orders", (HhpizzaDbContext db, int id) =>
+//View Order Items
+app.MapGet("/api/OrderDetails/{id}", (HhpizzaDbContext db, int id) =>
 {
-    var orders = db.Orders.Where(o => o.Id == id).Include(x => x.items).FirstOrDefault();
-
-    return orders;
+    var getOrder = db.Orders.Where(o => o.Id == id).Include(x => x.items).FirstOrDefault();
+    if (getOrder != null)
+    {
+        var items = getOrder.items.ToList();
+        return Results.Ok(items);
+    }
+    else
+    {
+        return Results.NotFound();
+    }
+   
 }
 );
 
+app.MapPost("/api/addReview/{id}", (HhpizzaDbContext db, int id, Review review) =>
+{
+    var getOrder = db.Orders.Where(o => o.Id == id).FirstOrDefault();
+    db.Reviews.Add(review);
+    db.SaveChanges();
+    getOrder.ReviewId = review.Id;
+    db.SaveChanges();
+    return Results.Ok(getOrder);
+});
+
+//get Order's Review
+app.MapGet("/api/getReview/{id}", (HhpizzaDbContext db, int id) =>
+{
+    var getOrder = db.Orders.Where(o => o.Id == id).Include(x => x.Review).FirstOrDefault();
+    if (getOrder.ReviewId != null)
+    {
+        var review = db.Reviews.Where(r => r.Id == getOrder.ReviewId).ToList();
+        return Results.Ok(review);
+    }
+    else
+    {
+        return Results.NotFound();
+    }
+
+}
+);
 app.Run();
