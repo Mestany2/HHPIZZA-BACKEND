@@ -76,10 +76,10 @@ namespace HHPIZZA_BACKEND.Migrations
                     Email = table.Column<string>(type: "text", nullable: false),
                     Phone = table.Column<string>(type: "text", nullable: false),
                     OrderType = table.Column<string>(type: "text", nullable: false),
-                    PaymentId = table.Column<int>(type: "integer", nullable: false),
+                    PaymentId = table.Column<int>(type: "integer", nullable: true),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    ReviewId = table.Column<int>(type: "integer", nullable: false),
-                    Tip = table.Column<decimal>(type: "numeric", nullable: false)
+                    ReviewId = table.Column<int>(type: "integer", nullable: true),
+                    Tip = table.Column<decimal>(type: "numeric", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -88,14 +88,12 @@ namespace HHPIZZA_BACKEND.Migrations
                         name: "FK_Orders_Payments_PaymentId",
                         column: x => x.PaymentId,
                         principalTable: "Payments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Orders_Reviews_ReviewId",
                         column: x => x.ReviewId,
                         principalTable: "Reviews",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Orders_Users_UserId",
                         column: x => x.UserId,
@@ -161,7 +159,7 @@ namespace HHPIZZA_BACKEND.Migrations
                 values: new object[,]
                 {
                     { 1, "Jack Smith", "4d56asd6", true },
-                    { 2, "Mike James", "4d56afdgdfgsd6", false }
+                    { 2, "Mike James", "S2KN1UC0fmc041tiwtKqHzA49zb2", false }
                 });
 
             migrationBuilder.InsertData(
@@ -171,6 +169,15 @@ namespace HHPIZZA_BACKEND.Migrations
                 {
                     { 1, "My@yahoo.com", "Customer One", "Phone", 1, "615-123-4567", 1, "Open", 5.45m, 1 },
                     { 2, "Myfg@yahoo.com", "Customer Two", "Online", 2, "615-143-4667", 2, "Closed", 2.45m, 2 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ItemOrder",
+                columns: new[] { "itemsId", "ordersId" },
+                values: new object[,]
+                {
+                    { 1, 1 },
+                    { 2, 1 }
                 });
 
             migrationBuilder.CreateIndex(

@@ -21,7 +21,7 @@ namespace HHPIZZA_BACKEND
             modelBuilder.Entity<User>().HasData(new User[]
             {
         new User {Id = 1, Name = "Jack Smith", Uid="4d56asd6", isStaff = true},
-        new User {Id = 2, Name = "Mike James", Uid="4d56afdgdfgsd6", isStaff = false},
+        new User {Id = 2, Name = "Mike James", Uid="S2KN1UC0fmc041tiwtKqHzA49zb2", isStaff = false},
 
             });
 
@@ -51,6 +51,12 @@ namespace HHPIZZA_BACKEND
 
 
     });
+            var ItemOrder = modelBuilder.Entity("ItemOrder");
+            ItemOrder.HasData(new[]
+                {
+            new { ordersId = 1, itemsId = 1 },
+            new { ordersId = 1, itemsId = 2 },
+            });
 
         }
     }
